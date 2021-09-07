@@ -19,12 +19,7 @@ public class ServiceTest {
     Dao dao= mock(Dao.class);
 
     @InjectMocks
-    Service service = new Service();
-
-    @BeforeEach
-    void before(){
-        service.setDao(dao);
-    }
+    Service service = new Service(dao);
 
     @Test
     @DisplayName("Calculating sum for random values")

@@ -5,12 +5,8 @@ import java.util.Arrays;
 public class Service {
 
     private Dao dao;
-//
-//    Service(Dao dao) {
-//        this.dao = dao;
-//    }
 
-    public void setDao(Dao dao) {
+    Service(Dao dao) {
         this.dao = dao;
     }
 

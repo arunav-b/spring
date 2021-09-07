@@ -90,20 +90,14 @@ public class ListMockTest {
     @DisplayName("Capturing multiple arguments passed in a method")
     public void test_multipleArgumentCapture() {
 
-        // Let's say the following piece of code is System-Under-Test
-        // This is the portion where actual code will be tested.
-        // Here we are just writing our own code.
         mockList.add("Some String1");
         mockList.add("Some String2");
 
-        // Declaring the instance that will capture the value passed in our object.
-        // In this case the object we are referring to is a String.
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        // Captor will capture the String that is passed in the add method in the actual code
         verify(mockList, times(2)).add(captor.capture());
 
+        // Capturing all the values in a List
         List<String> allValues = captor.getAllValues();
-        // Compares the actual and expected results
         assertEquals("Some String1", allValues.get(0));
         assertEquals("Some String2", allValues.get(1));
     }

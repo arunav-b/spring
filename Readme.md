@@ -355,26 +355,110 @@ advantages over JDBC with Spring:
 `spring-boot-starter-test` come with some dependencies that help us in doing unit testing:
 
 - **Mockito** is used for mocking data and objects
-- **JSONAssert** is used to compare and validate jsons
 - **WebMvcTest** provided by Spring is used to test Controllers. Along with **MockMvc** we can test controllers.
+- **JSONAssert** is used to compare and validate jsons
 
 ## Mockito
 
-- `mock(Sample.class)` is used to mock a `Sample` class
-- `when()` and `thenReturn()` methods are used to mock values on some methods
-- We can mock values with specific argument values when calling `when()`
-- **Argument Matchers:** We can use `anyInt()`, `anyString()`, etc within the arguments of the mocked method to allow any value of `int`
-  , `String`, etc.
-- `verify()` is useful when we want to know how many times a particular method is called with a specific value. There are some helper methods that we can pass in `verify()` to specify the number of times the method is called.
+- `mock(Sample.class)` is used to mock a `Sample` class. In the below example the `Dao` class is being mocked. As an alternative we can use `@Mock` annotation.
+- `when()` and `thenReturn()` methods are used to mock values on some methods. We can mock values with specific argument values when calling `when()`.
+  ```java
+      @Test
+      void random_calculateSum() {
+          Dao dao= mock(Dao.class);
+          Service service = new Service(dao);
+          int[] input = new int[]{14, 4, -9, 8};
+          when(dao.getAllData()).thenReturn(input);
+          assertEquals(17, service.calculateSum());
+      }
+  ```
+
+- **`ArgumentMatcher`**: 
+  - We can specify a fixed value in `when()` for a method with arguments. In case we want to test for `any` mocked value, we can use argument matcher. 
+  - We can use `any()`, `anyInt()`, `anyString()`, etc within the arguments of the mocked method to allow any value of `int`, `String`, etc.
+    ```java
+        @Test
+        public void test_returnWithGenericParams() {
+            List<String> mockList = mock(List.class);
+            // Here only get(0) is mocked. Any other int value will return null
+            when(mockList.get(0)).thenReturn("some value");
+            assertEquals("some value", mockList.get(0));
+            assertEquals(null, mockList.get(1));
+  
+            // Here any integer is mocked and so any int value will return the same value
+            when(mockList.get(anyInt())).thenReturn("same value");
+            assertEquals("same value", mockList.get(0));
+            assertEquals("same value", mockList.get(-1));
+            assertEquals("same value", mockList.get(23));
+        }
+    ```
+- **`verify()`**:
+  - Verifies certain behavior once (by default), unless `times` is specified. 
+  - This is useful when we want to know how many times a particular method is called with a specific value. There are some helper methods that we can pass in `verify()` to specify the number of times the method is called.
+
+    ```java
+      @Test
+      public void test_verify() {
+          List<String> mockList = mock(List.class);
+          // Let's say the following piece of code is System-Under-Test
+          // This is the portion where actual code will be tested.
+          // Here we are just writing our own code.
+          mockList.get(0);
+          mockList.get(1);
+
+          // Verifying number of calls with a specific value
+          verify(mockList).get(0); // If times is not passed, by default it is 1
+          verify(mockList, times(2)).get(anyInt());
+          verify(mockList, atLeast(1)).get(anyInt());
+          verify(mockList, atLeastOnce()).get(anyInt());
+          verify(mockList, atMost(2)).get(anyInt());
+          verify(mockList, never()).get(3);
+      }
+    ```
+- **`ArgumentCaptor`**: ArgumentCaptor allows us to capture an argument passed to a method in order to inspect it. This is especially useful when we can't access the argument outside of the method we'd like to test.
 
   ```java
-    verify(mockList).get(0); // If times is not passed, by default it is 1
-    verify(mockList, times(2)).get(anyInt());
-    verify(mockList, atLeast(1)).get(anyInt());
-    verify(mockList, atLeastOnce()).get(anyInt());
-    verify(mockList, atMost(2)).get(anyInt());
-    verify(mockList, never()).get(3);
-  ```
-- **Argument Capture:**  
+  public class EmailService {
   
+      private DeliveryPlatform platform;
+  
+      public EmailService(DeliveryPlatform platform) {
+          this.platform = platform;
+      }
+  
+      public void send(String to, String subject, String body, boolean html) {
+          Format format = Format.TEXT_ONLY;
+          if (html) {
+              format = Format.HTML;
+          }
+          Email email = new Email(to, subject, body);
+          email.setFormat(format);
+          platform.deliver(email); // We need to test the value passed in this method call
+      }
+  }
+  ```
+
+- Writing the test for the above class to test the format of the content passed in the `deliver()` method. We are setting the `boolean` html tag to `true` when calling the `send()` method and then capturing the argument passed in the `deliver()` method.
+
+  ```java
+  @Captor
+  ArgumentCaptor<Email> emailCaptor;
+  
+  @Test
+  public void whenDoesSupportHtml_expectHTMLEmailFormat() {
+    String to = "xyz@abc.com";
+    String subject = "Using ArgumentCaptor";
+    String body = "Hey, let'use ArgumentCaptor";
+  
+    emailService.send(to, subject, body, true);
+  
+    Mockito.verify(platform).deliver(emailCaptor.capture());
+    assertEquals(Format.HTML, emailCaptor.getValue().getFormat());
+  }
+  ```  
+- `spy()`/`@Spy` is used for partial mocking. Real methods are invoked but still can be verified and stubbed.
+
+> NOTE:
+> - A "mock" does not retain behavior (code) of the original class
+> - A "spy", by default retains the behavior of the original class
 

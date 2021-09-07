@@ -352,11 +352,17 @@ advantages over JDBC with Spring:
 
 # Unit Testing
 
-`spring-boot-starter-test` come with some dependencies that help us in doing unit testing:
+- For writing good unit tests ensure your unit tests are -
+  - Readable
+  - Fast
+  - Isolated (should not have external dependencies on DB, services, etc)
+  - Run Often
 
-- **Mockito** is used for mocking data and objects
-- **WebMvcTest** provided by Spring is used to test Controllers. Along with **MockMvc** we can test controllers.
-- **JSONAssert** is used to compare and validate jsons
+- `spring-boot-starter-test` come with some dependencies that help us in doing unit testing:
+  - **Mockito** is used for mocking data and objects
+  - **WebMvcTest** provided by Spring is used to test Controllers. Along with **MockMvc** we can test controllers.
+  - **JSONAssert** is used to compare and validate jsons
+  - Some Matcher libraries like **Hamcrest** and **AssertJ** are provided by default by `spring-boot-starter-test`
 
 ## Mockito
 
@@ -441,24 +447,34 @@ advantages over JDBC with Spring:
 - Writing the test for the above class to test the format of the content passed in the `deliver()` method. We are setting the `boolean` html tag to `true` when calling the `send()` method and then capturing the argument passed in the `deliver()` method.
 
   ```java
-  @Captor
-  ArgumentCaptor<Email> emailCaptor;
+    @Mock
+    DeliveryPlatform platform;
+
+    @InjectMocks
+    EmailService emailService;  
+    
+    @Captor
+    ArgumentCaptor<Email> emailCaptor;
   
-  @Test
-  public void whenDoesSupportHtml_expectHTMLEmailFormat() {
-    String to = "xyz@abc.com";
-    String subject = "Using ArgumentCaptor";
-    String body = "Hey, let'use ArgumentCaptor";
+    @Test
+    public void whenDoesSupportHtml_expectHTMLEmailFormat() {
+        String to = "xyz@abc.com";
+        String subject = "Using ArgumentCaptor";
+        String body = "Hey, let'use ArgumentCaptor";
   
-    emailService.send(to, subject, body, true);
+        emailService.send(to, subject, body, true);
   
-    Mockito.verify(platform).deliver(emailCaptor.capture());
-    assertEquals(Format.HTML, emailCaptor.getValue().getFormat());
-  }
+        Mockito.verify(platform).deliver(emailCaptor.capture());
+        assertEquals(Format.HTML, emailCaptor.getValue().getFormat());
+    }
   ```  
 - `spy()`/`@Spy` is used for partial mocking. Real methods are invoked but still can be verified and stubbed.
 
 > NOTE:
 > - A "mock" does not retain behavior (code) of the original class
 > - A "spy", by default retains the behavior of the original class
+> - `MockitoAnnotations.openMocks(this)` needs to be called to initialize `@InjectMocks` and `@Mock` annotations. 
+
+<br/>
+
 

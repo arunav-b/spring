@@ -1,10 +1,12 @@
 package me.arunav.spring.service;
 
+import me.arunav.spring.data.Dao;
+
 import java.util.Arrays;
 
 public class Service {
 
-    private Dao dao;
+    private final Dao dao;
 
     Service(Dao dao) {
         this.dao = dao;

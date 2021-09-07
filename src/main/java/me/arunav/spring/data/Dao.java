@@ -1,4 +1,4 @@
-package me.arunav.spring.service;
+package me.arunav.spring.data;
 
 public class Dao {
 

@@ -4,9 +4,7 @@ import me.arunav.spring.player.data.dao.PlayerDao;
 import me.arunav.spring.player.data.vo.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.reactive.function.client.WebClientCustomizer;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
